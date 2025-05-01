@@ -6,29 +6,31 @@ import requests
 
 app = Flask(__name__)
 
-# 테스트용 Bybit API 키 (실제 환경에서는 환경변수로 분리)
 API_KEY = 'kbVWLk5AtPkCOSOVnk'
 API_SECRET = 'uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        # 요청 내용 확인 로그
-        print("💡 raw body:", request.data)
-        print("💡 JSON:", request.json)
+        # 🔍 들어온 요청을 완전히 출력해보기
+        print("💡 받은 raw body:", request.data)
+        print("💡 받은 request.json:", request.json)
 
         data = request.json
         if not data:
+            print("❗ request.json이 None입니다.")
             return jsonify({"error": "no payload received"}), 400
 
         symbol = data.get('symbol')
         side = data.get('side')
         qty = data.get('qty')
 
+        print(f"📦 symbol: {symbol}, side: {side}, qty: {qty}")
+
         if not symbol or not side or not qty:
+            print("❗ 필수 항목이 누락되었습니다.")
             return jsonify({"error": "missing one or more required fields"}), 400
 
-        # Bybit V5 주문 API (테스트넷)
         url = 'https://api-testnet.bybit.com/v5/order/create'
         timestamp = str(int(time.time() * 1000))
         recvWindow = '5000'
@@ -44,7 +46,6 @@ def webhook():
             "recvWindow": recvWindow
         }
 
-        # 파라미터 정렬 + 서명 생성
         sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
         sign = hmac.new(
             bytes(API_SECRET, 'utf-8'),
@@ -57,13 +58,12 @@ def webhook():
             "Content-Type": "application/json"
         }
 
-        # Bybit 요청
         full_url = f"{url}?{sorted_params}&sign={sign}"
-        res = requests.post(full_url, json={}, headers=headers)
+        print("🔗 요청 URL:", full_url)
 
+        res = requests.post(full_url, json={}, headers=headers)
         print("📦 응답 일부:", res.text[:300])
 
-        # 응답 JSON 반환
         try:
             return jsonify(res.json())
         except Exception as e:
