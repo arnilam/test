@@ -7,8 +7,8 @@ import os
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get('BYBIT_API_KEY')
-API_SECRET = os.environ.get('BYBIT_API_SECRET')
+API_KEY = 'kbVWLk5AtPkCOSOVnk'
+API_SECRET = 'uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
