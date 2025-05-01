@@ -6,6 +6,7 @@ import requests
 
 app = Flask(__name__)
 
+# 테스트용 직접 입력 방식 (추후 환경변수로 대체 가능)
 API_KEY = 'kbVWLk5AtPkCOSOVnk'
 API_SECRET = 'uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT'
 
@@ -23,7 +24,6 @@ def webhook():
         timestamp = str(int(time.time() * 1000))
         recvWindow = '5000'
 
-        # ✅ params는 반드시 먼저 선언되어야 함!
         params = {
             "category": "linear",
             "symbol": symbol,
@@ -35,21 +35,35 @@ def webhook():
             "recvWindow": recvWindow
         }
 
+        # 쿼리 스트링 만들기 & 서명 생성
         sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
-        sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
+        sign = hmac.new(
+            bytes(API_SECRET, 'utf-8'),
+            bytes(sorted_params, 'utf-8'),
+            hashlib.sha256
+        ).hexdigest()
 
         headers = {
             "X-BYBIT-API-KEY": API_KEY,
             "Content-Type": "application/json"
         }
 
-        # ✅ 최종 요청
-        res = requests.post(f"{url}?{sorted_params}&sign={sign}", json={}, headers=headers)
-        print("📦 Bybit 응답:", res.text)
-        return jsonify(res.json())
+        # 실제 요청 (쿼리로 보내고 바디는 비움)
+        full_url = f"{url}?{sorted_params}&sign={sign}"
+        res = requests.post(full_url, json={}, headers=headers)
+
+        # 응답 출력 (길이 제한)
+        print("📦 응답 일부:", res.text[:300])
+
+        # 응답이 JSON 형식이면 반환
+        try:
+            return jsonify(res.json())
+        except Exception as e:
+            print("❌ JSON 파싱 실패:", e)
+            return jsonify({"error": "Invalid JSON", "raw": res.text[:300]}), 500
 
     except Exception as e:
-        print("🔥 오류 발생:", e)
+        print("🔥 서버 내부 오류:", e)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/')
