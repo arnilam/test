@@ -3,7 +3,6 @@ import time
 import hashlib
 import hmac
 import requests
-import os
 
 app = Flask(__name__)
 
@@ -16,14 +15,15 @@ def webhook():
         data = request.json
         print("🚀 받은 데이터:", data)
 
-        symbol = data['symbol']
-        side = data['side']
-        qty = data['qty']
+        symbol = data.get('symbol')
+        side = data.get('side')
+        qty = data.get('qty')
 
         url = 'https://api-testnet.bybit.com/v5/order/create'
         timestamp = str(int(time.time() * 1000))
         recvWindow = '5000'
 
+        # ✅ params는 반드시 먼저 선언되어야 함!
         params = {
             "category": "linear",
             "symbol": symbol,
@@ -43,6 +43,7 @@ def webhook():
             "Content-Type": "application/json"
         }
 
+        # ✅ 최종 요청
         res = requests.post(f"{url}?{sorted_params}&sign={sign}", json={}, headers=headers)
         print("📦 Bybit 응답:", res.text)
         return jsonify(res.json())
