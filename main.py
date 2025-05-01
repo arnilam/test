@@ -1,7 +1,18 @@
+from flask import Flask, request, jsonify
+import time
+import hashlib
+import hmac
+import requests
+
+app = Flask(__name__)
+
+API_KEY = 'kbVWLk5AtPkCOSOVnk'
+API_SECRET = 'uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT'
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        # 요청 내용 확인 로그
+        # 요청 확인 로그
         print("💡 raw body:", request.data)
         print("💡 JSON:", request.json)
 
@@ -20,6 +31,7 @@ def webhook():
             print("❗ 필수 항목이 누락되었습니다.")
             return jsonify({"error": "missing one or more required fields"}), 400
 
+        # Bybit 주문
         url = 'https://api-testnet.bybit.com/v5/order/create'
         timestamp = str(int(time.time() * 1000))
         recvWindow = '5000'
@@ -62,3 +74,10 @@ def webhook():
     except Exception as e:
         print("🔥 서버 에러:", e)
         return jsonify({"error": str(e)}), 500
+
+@app.route('/')
+def home():
+    return '✅ Flask 서버 작동 중!'
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
