@@ -12,38 +12,42 @@ API_SECRET = os.environ.get('uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT')
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.json
-    symbol = data['symbol']
-    side = data['side']
-    qty = data['qty']
+    try:
+        data = request.json
+        print("🚀 받은 데이터:", data)
 
-    url = 'https://api-testnet.bybit.com/v5/order/create'
-    timestamp = str(int(time.time() * 1000))
-    recvWindow = '5000'
+        symbol = data['symbol']
+        side = data['side']
+        qty = data['qty']
 
-    params = {
-        "category": "linear",
-        "symbol": symbol,
-        "side": side,
-        "orderType": "Market",
-        "qty": str(qty),
-        "timeInForce": "GoodTillCancel",
-        "timestamp": timestamp,
-        "recvWindow": recvWindow
-    }
+        url = 'https://api-testnet.bybit.com/v5/order/create'
+        timestamp = str(int(time.time() * 1000))
+        recvWindow = '5000'
 
-    sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
-    sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
-    params["sign"] = sign
+        params = {
+            "category": "linear",
+            "symbol": symbol,
+            "side": side,
+            "orderType": "Market",
+            "qty": str(qty),
+            "timeInForce": "GoodTillCancel",
+            "timestamp": timestamp,
+            "recvWindow": recvWindow
+        }
 
-    headers = {
-        "X-BYBIT-API-KEY": API_KEY,
-        "Content-Type": "application/json"
-    }
+        sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
+        sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
+        params["sign"] = sign
 
-           res = requests.post(url, json=params, headers=headers)
+        headers = {
+            "X-BYBIT-API-KEY": API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        res = requests.post(url, json=params, headers=headers)
         print("📦 Bybit 응답:", res.text)
         return jsonify(res.json())
+
     except Exception as e:
         print("🔥 오류 발생:", e)
         return jsonify({"error": str(e)}), 500
