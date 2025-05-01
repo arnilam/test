@@ -36,8 +36,7 @@ def webhook():
         }
 
         sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
-sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
-sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
+        sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
 
         headers = {
             "X-BYBIT-API-KEY": API_KEY,
