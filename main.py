@@ -1,20 +1,9 @@
-from flask import Flask, request, jsonify
-import time
-import hashlib
-import hmac
-import requests
-
-app = Flask(__name__)
-
-API_KEY = 'kbVWLk5AtPkCOSOVnk'
-API_SECRET = 'uiWO9NHqgEbQCbdb4SSsHEP6cTOyqvKL45jT'
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        # 🔍 들어온 요청을 완전히 출력해보기
-        print("💡 받은 raw body:", request.data)
-        print("💡 받은 request.json:", request.json)
+        # 요청 내용 확인 로그
+        print("💡 raw body:", request.data)
+        print("💡 JSON:", request.json)
 
         data = request.json
         if not data:
@@ -73,10 +62,3 @@ def webhook():
     except Exception as e:
         print("🔥 서버 에러:", e)
         return jsonify({"error": str(e)}), 500
-
-@app.route('/')
-def home():
-    return '✅ Flask 서버 작동 중!'
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
