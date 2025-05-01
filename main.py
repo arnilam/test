@@ -41,8 +41,12 @@ def webhook():
         "Content-Type": "application/json"
     }
 
-    res = requests.post(url, json=params, headers=headers)
-    return jsonify(res.json())
+           res = requests.post(url, json=params, headers=headers)
+        print("📦 Bybit 응답:", res.text)
+        return jsonify(res.json())
+    except Exception as e:
+        print("🔥 오류 발생:", e)
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def home():
