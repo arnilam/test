@@ -36,15 +36,15 @@ def webhook():
         }
 
         sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
-        sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
-        params["sign"] = sign
+sorted_params = '&'.join([f"{k}={params[k]}" for k in sorted(params)])
+sign = hmac.new(bytes(API_SECRET, 'utf-8'), bytes(sorted_params, 'utf-8'), hashlib.sha256).hexdigest()
 
         headers = {
             "X-BYBIT-API-KEY": API_KEY,
             "Content-Type": "application/json"
         }
 
-        res = requests.post(url, json=params, headers=headers)
+        res = requests.post(f"{url}?{sorted_params}&sign={sign}", json={}, headers=headers)
         print("📦 Bybit 응답:", res.text)
         return jsonify(res.json())
 
